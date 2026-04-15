@@ -17,7 +17,7 @@ RUN addgroup -S roboshop
 RUN adduser -S roboshop -G roboshop
 COPY --from=builder /app /app
 COPY --from=builder /install /usr/local
-RUN chown -R roboshop:roboshop
+RUN chown -R roboshop:roboshop /app
 ENV CART_HOST="cart-cont" \
     CART_PORT="8080" \
     USER_HOST="user-cont" \
