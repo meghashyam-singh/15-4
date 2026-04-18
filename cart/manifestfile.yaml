@@ -1,0 +1,119 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cart-config
+  namespace: roboshop
+data:
+  REDIS_HOST: "redis-service"
+  CATALOGUE_HOST: "catalogue-service"
+  CATALOGUE_PORT: "8080"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart
+  namespace: roboshop
+  labels:
+    project: roboshop
+    tier: backend
+    component: cart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: roboshop
+      tier: backend
+      component: cart
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        tier: backend
+        component: cart
+    spec:
+      serviceAccountName: cart-service-account
+      containers:
+        - name: cart-cont
+          image: meghashyam792/roboshop:cart
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: cart-port
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          envFrom:
+            - configMapRef:
+                name: cart-config    
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: cart-port
+            failureThreshold: 2
+            initialDelaySeconds: 50
+            periodSeconds: 50
+            timeoutSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: cart-port
+            failureThreshold: 2
+            initialDelaySeconds: 50
+            periodSeconds: 50
+            timeoutSeconds: 15
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  namespace: roboshop
+spec:
+  type: ClusterIP
+  selector:
+    project: roboshop
+    tier: backend
+    component: cart
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: cart-port
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cart-hpa
+  namespace: roboshop
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cart
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cart-service-account
+  namespace: roboshop
+  labels:
+    project: roboshop
+    tier: backend
+    component: cart
