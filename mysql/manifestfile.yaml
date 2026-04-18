@@ -51,27 +51,27 @@ spec:
           ports:
             - containerPort: 3306
               name: mysql-port
-          resources:
-            requests:
-              cpu: "500m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-          readinessProbe:
-            tcpSocket:
-              port: mysql-port
-            failureThreshold: 2
-            initialDelaySeconds: 100
-            periodSeconds: 100
-            timeoutSeconds: 25
-          livenessProbe:
-            tcpSocket:
-              port: mysql-port
-            failureThreshold: 2
-            initialDelaySeconds: 100
-            periodSeconds: 100
-            timeoutSeconds: 25
+          # resources:
+          #   requests:
+          #     cpu: "500m"
+          #     memory: "512Mi"
+          #   limits:
+          #     cpu: "1000m"
+          #     memory: "1Gi"
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: mysql-port
+          #   failureThreshold: 2
+          #   initialDelaySeconds: 100
+          #   periodSeconds: 100
+          #   timeoutSeconds: 25
+          # livenessProbe:
+          #   tcpSocket:
+          #     port: mysql-port
+          #   failureThreshold: 2
+          #   initialDelaySeconds: 100
+          #   periodSeconds: 100
+          #   timeoutSeconds: 25
           volumeMounts:
             - name: mysql-volume
               mountPath: /etc/mysql/conf.d/my.cnf
